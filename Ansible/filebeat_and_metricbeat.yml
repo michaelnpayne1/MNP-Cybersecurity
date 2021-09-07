@@ -1,0 +1,52 @@
+---
+  - name: Installing and launching filebeat
+    hosts: webservers
+    become: yes
+    tasks:
+
+    - name: Download filebeat deb
+      command: sudo curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat-7.6.1-amd64.deb
+
+    - name: install filebeat deb
+      command: sudo dpkg -i filebeat-7.6.1-amd64.deb
+
+    - name: Drop in filebeat.yml
+      copy:
+        src: /etc/ansible/files/filebeat-config.yml
+        dest: /etc/filebeat/filebeat.yml
+
+    - name: Enable and Configure System Module
+      command: filebeat modules enable system
+
+    - name: Setup Filebeat
+      command: filebeat setup
+
+    - name: Start Filebeat Service
+      command: service filebeat start
+
+    - name: Enable Service Filebeat on Boot
+      systemd:
+        name: filebeat
+        enabled: yes
+      
+    - name: Download metricbeat deb
+      command: curl -L -O https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-7.6.1-amd64.deb
+
+    - name: install metricbeat deb
+      command: sudo dpkg -i metricbeat-7.6.1-amd64.deb
+
+    - name: Drop in metricbeat.yml
+      copy:
+        src: /etc/ansible/files/metricbeat-config.yml
+        dest: /etc/metricbeat/metricbeat.yml
+
+    - name: Enable and Configure System Module
+      command: metricbeat modules enable docker
+
+    - name: Setup metricbeat
+      command: metricbeat setup
+
+    - name: Enable Service Metricbeat on boot
+      systemd:
+        name: metricbeat
+        enabled: yes
